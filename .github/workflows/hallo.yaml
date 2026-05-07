@@ -2,6 +2,7 @@ name: Hallo Welt
 
 on:
   push:
+  workflow_dispatch:
 
 jobs:
   sag-hallo:

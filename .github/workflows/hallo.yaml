@@ -4,10 +4,10 @@ on:
   push:
   workflow_dispatch:
     inputs:
-    name:
-      description: "Wen soll ich begrüßen?"
-      required: true
-      default: "Welt"
+      name:
+        description: "Wen soll ich begrüßen?"
+        required: true
+        default: "Welt"
 
 jobs:
   sag-hallo:

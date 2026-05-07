@@ -1,0 +1,99 @@
+name: Haiku Container Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-und-teste:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code auschecken
+        uses: actions/checkout@v4
+
+      - name: Docker-Image bauen
+        run: docker build -t haikus-100:ci .
+
+      - name: Container starten
+        run: |
+          docker run -d --name haikus -p 8080:80 haikus-100:ci
+          echo "Warte, bis nginx bereit ist…"
+          for i in {1..20}; do
+            if curl -sf -o /dev/null http://localhost:8080/; then
+              echo "nginx ist bereit nach $i Versuchen"
+              exit 0
+            fi
+            sleep 0.5
+          done
+          echo "nginx wurde nicht rechtzeitig bereit"
+          docker logs haikus
+          exit 1
+
+      - name: HTTP 200 auf / prüfen
+        run: |
+          status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/)
+          echo "Status für /: $status"
+          if [ "$status" != "200" ]; then
+            echo "Erwartet 200, erhalten $status"
+            exit 1
+          fi
+
+      - name: HTTP 404 auf unbekannten Pfaden prüfen
+        run: |
+          for pfad in /gibt-es-nicht /haiku/16 /admin /api/v1/foo; do
+            status=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:8080${pfad}")
+            echo "Status für ${pfad}: $status"
+            if [ "$status" != "404" ]; then
+              echo "Erwartet 404 für ${pfad}, erhalten $status"
+              exit 1
+            fi
+          done
+
+      - name: Inhalt der Startseite prüfen
+        run: |
+          body=$(curl -sf http://localhost:8080/)
+
+          echo "Prüfe Titel und Überschrift…"
+          echo "$body" | grep -q "Mein hundertster GitHub Workflow" || { echo "Titel fehlt"; exit 1; }
+          echo "$body" | grep -q "15 Haikus" || { echo "Untertitel fehlt"; exit 1; }
+
+          echo "Prüfe alle 15 Haiku-Nummern (I–XV)…"
+          for n in I II III IV V VI VII VIII IX X XI XII XIII XIV XV; do
+            echo "$body" | grep -q ">${n}<" || { echo "Haiku-Nummer ${n} fehlt"; exit 1; }
+          done
+
+          echo "Prüfe charakteristische Zeilen aus jedem Haiku…"
+          erwartete_zeilen=(
+            "Hundert mal gebaut"
+            "Pipeline läuft genau"
+            "Commit ist nun schlau"
+            "Runner zieht den Gau"
+            "Hundert, stolzer Pfau"
+            "YAML steht im Bau"
+            "Cache wird neu gebaut"
+            "Matrix breit aufbaut"
+            "Tests in jedem Gau"
+            "Lint hat scharf geschaut"
+            "Docker-Image staut"
+            "Deploy in der Au"
+            "Rollback steht parat-au"
+            "Status-Badge schlau"
+            "Hundert ist die Schau"
+          )
+          for zeile in "${erwartete_zeilen[@]}"; do
+            echo "$body" | grep -qF "$zeile" || { echo "Zeile fehlt: ${zeile}"; exit 1; }
+          done
+
+          echo "Alle 15 Haikus korrekt gefunden."
+
+      - name: Container-Logs ausgeben (immer)
+        if: always()
+        run: docker logs haikus || true
+
+      - name: Container stoppen und entfernen
+        if: always()
+        run: |
+          docker rm -f haikus || true
+          docker rmi haikus-100:ci || true

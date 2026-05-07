@@ -3,13 +3,18 @@ name: Hallo Welt
 on:
   push:
   workflow_dispatch:
+    inputs:
+    name:
+      description: "Wen soll ich begrüßen?"
+      required: true
+      default: "Welt"
 
 jobs:
   sag-hallo:
     runs-on: ubuntu-latest
     steps:
       - name: Begrüßung
-        run: echo "Hallo aus GitHub Actions!"
+        run: echo "Hallo, ${{ inputs.name }}!"
 
       - name: Datum und Uhrzeit
         run: date

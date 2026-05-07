@@ -9,3 +9,21 @@ jobs:
     steps:
       - name: Begrüßung
         run: echo "Hallo aus GitHub Actions!"
+
+      - name: Datum und Uhrzeit
+        run: date
+
+      - name: Welche Maschine?
+        run: |
+          echo "Betriebssystem:"
+          uname -a
+          echo ""
+          echo "Aktuelles Verzeichnis:"
+          pwd
+
+      - name: Verfügbare Tools prüfen
+        run: |
+          git --version
+          docker --version
+          python3 --version
+          node --version

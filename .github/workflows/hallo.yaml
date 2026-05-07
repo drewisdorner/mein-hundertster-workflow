@@ -34,5 +34,5 @@ jobs:
           python3 --version
           node --version
 
-      - name: Absichtlich falsch
-        run: dieser-befehl-existiert-nicht
+      # - name: Absichtlich falsch
+      #   run: dieser-befehl-existiert-nicht

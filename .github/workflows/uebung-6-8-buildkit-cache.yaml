@@ -1,0 +1,43 @@
+name: Übung 6.8 – BuildKit, Cache und Smoke-Test
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  buildkit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code auschecken
+        uses: actions/checkout@v4
+
+      - name: Buildx einrichten
+        uses: docker/setup-buildx-action@v3
+
+      - name: Image bauen, in den Daemon laden und gha-Cache nutzen
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          tags: haikus-100:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Smoke-Test mit curl
+        run: |
+          docker run -d --name haikus-buildx -p 8080:80 haikus-100:${{ github.sha }}
+          echo "Warte, bis nginx erreichbar ist…"
+          for i in {1..20}; do
+            if curl -sf -o /dev/null http://localhost:8080/; then
+              echo "Erfolg nach $i Versuchen."
+              exit 0
+            fi
+            sleep 0.5
+          done
+          echo "Container war nicht rechtzeitig bereit."
+          docker logs haikus-buildx
+          exit 1
+
+      - name: Container aufräumen
+        if: always()
+        run: docker rm -f haikus-buildx || true

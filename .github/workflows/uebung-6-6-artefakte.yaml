@@ -1,0 +1,43 @@
+name: Übung 6.6 – Artefakte zwischen Jobs
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  bauen:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Artefakt-Verzeichnis erzeugen
+        run: |
+          mkdir -p output
+          echo "Build aus Commit ${{ github.sha }}" > output/build.txt
+          echo "Inhalt der Datei:"
+          cat output/build.txt
+
+      - name: Artefakt hochladen
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-output
+          path: output/build.txt
+
+  verwenden:
+    runs-on: ubuntu-latest
+    needs: bauen
+    steps:
+      - name: Versuch ohne Download (scheitert absichtlich)
+        continue-on-error: true
+        run: |
+          echo "Inhalt von build.txt – Versuch ohne Download:"
+          cat output/build.txt
+
+      - name: Artefakt herunterladen
+        uses: actions/download-artifact@v4
+        with:
+          name: build-output
+          path: output
+
+      - name: Versuch mit Download (erfolgreich)
+        run: |
+          echo "Inhalt von build.txt – Versuch mit Download:"
+          cat output/build.txt

@@ -1,0 +1,23 @@
+name: Übung 6.4 – Matrix-Build mit Python
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  python-versionen:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - name: Python ${{ matrix.python-version }} einrichten
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Python-Version prüfen
+        run: python --version
+
+      - name: Matrix-Wert ausgeben
+        run: echo "Dieser Job läuft für Python ${{ matrix.python-version }}."

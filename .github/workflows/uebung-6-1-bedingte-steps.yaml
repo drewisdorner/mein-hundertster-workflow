@@ -9,7 +9,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Auslöser ausgeben (immer)
-        run: echo "Dieser Workflow wurde ausgelöst durch: ${{ github.event_name }}"
+        run: |
+          echo "Dieser Workflow wurde ausgelöst durch ${{ github.event_name }}"
 
       - name: Nur bei push den Branch zeigen
         if: github.event_name == 'push'

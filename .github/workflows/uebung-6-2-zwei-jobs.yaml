@@ -1,0 +1,19 @@
+name: Übung 6.2 – Zwei Jobs mit Abhängigkeit
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  vorbereiten:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Begrüßung
+        run: echo "Hallo aus dem Vorbereitungs-Job – ich bin zuerst dran."
+
+  arbeiten:
+    runs-on: ubuntu-latest
+    needs: vorbereiten
+    steps:
+      - name: Zweite Meldung
+        run: echo "Vorbereitung ist fertig – jetzt arbeite ich los."

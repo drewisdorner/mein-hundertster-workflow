@@ -1,0 +1,23 @@
+name: Übung 6.3 – actions/checkout
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  lese-datei:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Versuch ohne Checkout (scheitert absichtlich)
+        continue-on-error: true
+        run: |
+          echo "Inhalt von hallo.txt – Versuch ohne Checkout:"
+          cat hallo.txt
+
+      - name: Repo auschecken
+        uses: actions/checkout@v4
+
+      - name: Versuch mit Checkout (erfolgreich)
+        run: |
+          echo "Inhalt von hallo.txt – Versuch mit Checkout:"
+          cat hallo.txt

@@ -1,0 +1,13 @@
+services:
+  app:
+    image: challenge6-app:${APP_TAG:-latest}
+    ports:
+      - "5050:5000"
+    depends_on:
+      - redis
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+
+  redis:
+    image: redis:7-alpine

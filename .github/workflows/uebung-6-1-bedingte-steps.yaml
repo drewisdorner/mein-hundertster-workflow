@@ -1,0 +1,20 @@
+name: Übung 6.1 – Bedingte Steps
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  bedingungen:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Auslöser ausgeben (immer)
+        run: echo "Dieser Workflow wurde ausgelöst durch: ${{ github.event_name }}"
+
+      - name: Nur bei push den Branch zeigen
+        if: github.event_name == 'push'
+        run: echo "Branch ${{ github.ref_name }} wurde gepusht."
+
+      - name: Nur bei manuellem Start eine Bestätigung
+        if: github.event_name == 'workflow_dispatch'
+        run: echo "Manueller Start bestätigt – alles läuft."

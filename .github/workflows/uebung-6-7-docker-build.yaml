@@ -1,0 +1,37 @@
+name: Übung 6.7 – Erstes Docker-Image bauen
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code auschecken
+        uses: actions/checkout@v4
+
+      - name: Docker-Version prüfen
+        run: docker --version
+
+      - name: Image mit SHA-Tag bauen
+        run: docker build -t haikus-100:${{ github.sha }} .
+
+      - name: Smoke-Test mit curl
+        run: |
+          docker run -d --name haikus-smoke -p 8080:80 haikus-100:${{ github.sha }}
+          echo "Warte, bis nginx erreichbar ist…"
+          for i in {1..20}; do
+            if curl -sf -o /dev/null http://localhost:8080/; then
+              echo "Erfolg nach $i Versuchen."
+              exit 0
+            fi
+            sleep 0.5
+          done
+          echo "Container war nicht rechtzeitig bereit."
+          docker logs haikus-smoke
+          exit 1
+
+      - name: Container aufräumen
+        if: always()
+        run: docker rm -f haikus-smoke || true
